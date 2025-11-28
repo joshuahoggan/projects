@@ -167,6 +167,28 @@
             margin-top: 2rem;
         }
         
+        .undo-button {
+            background-color: #6c757d;
+            margin-top: 1rem;
+        }
+        
+        .undo-button:hover {
+            background-color: #5a6268;
+        }
+        
+        .undo-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .share-button {
+            background-color: #17a2b8;
+        }
+        
+        .share-button:hover {
+            background-color: #138496;
+        }
+        
         .error {
             color: #d32f2f;
             margin-top: 0.5rem;
@@ -223,6 +245,84 @@
             color: #999;
             margin: 0.15rem 0;
         }
+        
+        .share-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .share-modal.active {
+            display: flex;
+        }
+        
+        .share-modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .share-modal-content h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+        }
+        
+        .share-link-container {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .share-link-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .copy-link-button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .copy-link-button:hover {
+            background-color: #0052a3;
+        }
+        
+        .copy-link-button.copied {
+            background-color: #28a745;
+        }
+        
+        .share-modal-close {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .share-modal-close:hover {
+            background-color: #5a6268;
+        }
     </style>
 </head>
 <body>
@@ -255,6 +355,8 @@
                     <div class="comparison-button" id="item2Button" onclick="selectItem(1)"></div>
                 </div>
                 
+                <button class="undo-button" id="undoButton" onclick="undoLastComparison()" disabled>Undo Last Choice</button>
+                
                 <div class="live-ranking" id="liveRanking">
                     <h3>Current Ranking</h3>
                     <ol class="ranked-list" id="liveRankedList"></ol>
@@ -266,10 +368,23 @@
                 <ol class="ranked-list" id="rankedList"></ol>
                 <div style="display: flex; gap: 1rem; margin-top: 2rem;">
                     <button class="download-button" onclick="downloadRanking()">Download Ranking</button>
+                    <button class="share-button" onclick="shareResults()">Share Results</button>
                     <button onclick="reset()">Rank Another List</button>
                 </div>
             </section>
         </main>
+    </div>
+    
+    <div class="share-modal" id="shareModal">
+        <div class="share-modal-content">
+            <h3>Share Your Ranking</h3>
+            <p>Copy this link to share your ranking results:</p>
+            <div class="share-link-container">
+                <input type="text" class="share-link-input" id="shareLinkInput" readonly>
+                <button class="copy-link-button" id="copyLinkButton" onclick="copyShareLink()">Copy Link</button>
+            </div>
+            <button class="share-modal-close" onclick="closeShareModal()">Close</button>
+        </div>
     </div>
     
     <script>
@@ -277,6 +392,7 @@
         let comparisons = [];
         let currentComparisonIndex = 0;
         let scores = {};
+        let comparisonHistory = []; // Store history for undo functionality
         
         function startRanking() {
             const input = document.getElementById('itemsInput').value.trim();
@@ -313,11 +429,16 @@
             });
             
             currentComparisonIndex = 0;
+            comparisonHistory = []; // Reset history
             
             // Hide input, show comparison
             document.querySelector('.input-section').style.display = 'none';
             document.getElementById('comparisonSection').style.display = 'block';
             
+            // Add keyboard event listener for arrow keys
+            document.addEventListener('keydown', handleKeyPress);
+            
+            updateUndoButton();
             updateLiveRanking();
             showComparison();
         }
@@ -352,11 +473,67 @@
                 parseInt(document.getElementById('item2Button').dataset.index) :
                 parseInt(document.getElementById('item1Button').dataset.index);
             
+            // Save state to history before making changes
+            const historyEntry = {
+                comparisonIndex: currentComparisonIndex,
+                winnerIndex: winnerIndex,
+                loserIndex: loserIndex,
+                scoresSnapshot: { ...scores }
+            };
+            comparisonHistory.push(historyEntry);
+            
             scores[winnerIndex]++;
             
             currentComparisonIndex++;
+            updateUndoButton();
             updateLiveRanking();
             showComparison();
+        }
+        
+        function undoLastComparison() {
+            if (comparisonHistory.length === 0) {
+                return;
+            }
+            
+            const lastEntry = comparisonHistory.pop();
+            
+            // Restore scores
+            scores = lastEntry.scoresSnapshot;
+            
+            // Go back to the previous comparison
+            currentComparisonIndex = lastEntry.comparisonIndex;
+            
+            updateUndoButton();
+            updateLiveRanking();
+            showComparison();
+        }
+        
+        function updateUndoButton() {
+            const undoButton = document.getElementById('undoButton');
+            if (undoButton) {
+                undoButton.disabled = comparisonHistory.length === 0;
+            }
+        }
+        
+        function handleKeyPress(event) {
+            // Only handle arrow keys when comparison section is visible
+            const comparisonSection = document.getElementById('comparisonSection');
+            if (comparisonSection.style.display === 'none') {
+                return;
+            }
+            
+            // Don't handle if user is typing in an input field
+            if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+                return;
+            }
+            
+            if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                selectItem(0);
+            } else if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                selectItem(1);
+            }
         }
         
         function updateLiveRanking() {
@@ -466,18 +643,141 @@
             URL.revokeObjectURL(url);
         }
         
+        function shareResults() {
+            if (!window.finalRanking || window.finalRanking.length === 0) {
+                return;
+            }
+            
+            // Encode the ranking data as base64 JSON
+            const rankingData = JSON.stringify(window.finalRanking);
+            const encodedData = btoa(encodeURIComponent(rankingData));
+            
+            // Create shareable URL
+            const currentUrl = window.location.origin + window.location.pathname;
+            const shareUrl = `${currentUrl}?ranking=${encodedData}`;
+            
+            // Show modal with the link
+            const modal = document.getElementById('shareModal');
+            const linkInput = document.getElementById('shareLinkInput');
+            const copyButton = document.getElementById('copyLinkButton');
+            
+            linkInput.value = shareUrl;
+            copyButton.textContent = 'Copy Link';
+            copyButton.classList.remove('copied');
+            modal.classList.add('active');
+            
+            // Auto-select the link text
+            linkInput.select();
+        }
+        
+        function copyShareLink() {
+            const linkInput = document.getElementById('shareLinkInput');
+            const copyButton = document.getElementById('copyLinkButton');
+            
+            linkInput.select();
+            linkInput.setSelectionRange(0, 99999); // For mobile devices
+            
+            navigator.clipboard.writeText(linkInput.value).then(() => {
+                copyButton.textContent = 'Copied!';
+                copyButton.classList.add('copied');
+                setTimeout(() => {
+                    copyButton.textContent = 'Copy Link';
+                    copyButton.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                // Fallback for older browsers
+                try {
+                    document.execCommand('copy');
+                    copyButton.textContent = 'Copied!';
+                    copyButton.classList.add('copied');
+                    setTimeout(() => {
+                        copyButton.textContent = 'Copy Link';
+                        copyButton.classList.remove('copied');
+                    }, 2000);
+                } catch (err) {
+                    alert('Failed to copy link. Please copy manually.');
+                }
+            });
+        }
+        
+        function closeShareModal() {
+            const modal = document.getElementById('shareModal');
+            modal.classList.remove('active');
+        }
+        
+        // Close modal when clicking outside
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('shareModal');
+            if (event.target === modal) {
+                closeShareModal();
+            }
+        });
+        
+        // Load ranking from URL on page load
+        function loadRankingFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const rankingParam = urlParams.get('ranking');
+            
+            if (rankingParam) {
+                try {
+                    // Decode the base64 data
+                    const decodedData = decodeURIComponent(atob(rankingParam));
+                    const ranking = JSON.parse(decodedData);
+                    
+                    if (Array.isArray(ranking) && ranking.length > 0) {
+                        // Display the shared ranking
+                        window.finalRanking = ranking;
+                        displaySharedRanking(ranking);
+                    }
+                } catch (err) {
+                    console.error('Failed to load ranking from URL:', err);
+                }
+            }
+        }
+        
+        function displaySharedRanking(ranking) {
+            // Hide input section, show results
+            document.querySelector('.input-section').style.display = 'none';
+            document.getElementById('comparisonSection').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'block';
+            
+            const rankedList = document.getElementById('rankedList');
+            rankedList.innerHTML = '';
+            
+            ranking.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                if (index === 0) li.classList.add('medal-gold');
+                else if (index === 1) li.classList.add('medal-silver');
+                else if (index === 2) li.classList.add('medal-bronze');
+                rankedList.appendChild(li);
+            });
+        }
+        
         function reset() {
             items = [];
             comparisons = [];
             currentComparisonIndex = 0;
             scores = {};
+            comparisonHistory = [];
+            
+            // Remove keyboard event listener
+            document.removeEventListener('keydown', handleKeyPress);
             
             document.getElementById('itemsInput').value = '';
             document.getElementById('inputError').textContent = '';
             document.querySelector('.input-section').style.display = 'block';
             document.getElementById('comparisonSection').style.display = 'none';
             document.getElementById('resultsSection').style.display = 'none';
+            
+            // Clear URL parameters
+            if (window.history.replaceState) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
         }
+        
+        // Load ranking from URL when page loads
+        window.addEventListener('DOMContentLoaded', loadRankingFromUrl);
     </script>
 </body>
 </html>
