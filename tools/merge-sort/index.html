@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merge Sort Ranking Tool</title>
+    <link rel="stylesheet" href="../../style.css">
+    <style>
+        .input-section {
+            margin-bottom: 2rem;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 0.75rem;
+            font-family: inherit;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: vertical;
+        }
+        
+        button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        
+        button:hover {
+            background-color: #0052a3;
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .error {
+            color: #d32f2f;
+            margin-top: 0.5rem;
+        }
+        
+        .comparison-section {
+            display: none;
+            margin-top: 2rem;
+        }
+        
+        .progress-bar-container {
+            margin-bottom: 2rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 24px;
+            background-color: #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #0066cc;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .progress-text {
+            margin-bottom: 0.5rem;
+            color: #666;
+        }
+        
+        #comparisonContent {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .comparison-button {
+            flex: 1;
+            padding: 2rem;
+            font-size: 1.2rem;
+            background-color: #f5f5f5;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .comparison-button:hover {
+            background-color: #e8e8e8;
+            border-color: #0066cc;
+        }
+        
+        .vs {
+            font-size: 1.5rem;
+            color: #666;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .results-section {
+            display: none;
+            margin-top: 2rem;
+        }
+        
+        .ranked-list {
+            list-style: none;
+            counter-reset: rank;
+        }
+        
+        .ranked-list li {
+            counter-increment: rank;
+            padding: 0.6rem 0.8rem;
+            margin-bottom: 0.35rem;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .ranked-list li::before {
+            content: counter(rank);
+            font-weight: 600;
+            color: #0066cc;
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
+            min-width: 1.8rem;
+        }
+        
+        .ranked-list li.medal-gold::before {
+            content: "🥇";
+            font-size: 1.3rem;
+        }
+        
+        .ranked-list li.medal-silver::before {
+            content: "🥈";
+            font-size: 1.3rem;
+        }
+        
+        .ranked-list li.medal-bronze::before {
+            content: "🥉";
+            font-size: 1.3rem;
+        }
+        
+        .undo-button {
+            background-color: #6c757d;
+            margin-top: 1rem;
+        }
+        
+        .undo-button:hover {
+            background-color: #5a6268;
+        }
+        
+        .undo-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .live-ranking {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .live-ranking h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #666;
+        }
+        
+        .live-ranking .ranked-list {
+            margin: 0;
+        }
+        
+        .live-ranking .ranked-list li {
+            margin-bottom: 0.15rem;
+            padding: 0.4rem 0.75rem;
+            font-size: 0.9rem;
+        }
+        
+        .live-ranking .ranked-list li::before {
+            font-size: 1rem;
+            min-width: 1.5rem;
+        }
+        
+        .live-ranking .ranked-list li.medal-gold::before {
+            content: "🥇";
+            font-size: 1.1rem;
+        }
+        
+        .live-ranking .ranked-list li.medal-silver::before {
+            content: "🥈";
+            font-size: 1.1rem;
+        }
+        
+        .live-ranking .ranked-list li.medal-bronze::before {
+            content: "🥉";
+            font-size: 1.1rem;
+        }
+        
+        .comparison-info {
+            text-align: center;
+            color: #666;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .input-format {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        
+        .download-button {
+            background-color: #28a745;
+            margin-top: 0;
+        }
+        
+        .download-button:hover {
+            background-color: #218838;
+        }
+        
+        .results-section button {
+            margin-top: 0;
+            flex: 1;
+        }
+        
+        .share-button {
+            background-color: #17a2b8;
+        }
+        
+        .share-button:hover {
+            background-color: #138496;
+        }
+        
+        .share-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .share-modal.active {
+            display: flex;
+        }
+        
+        .share-modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .share-modal-content h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+        }
+        
+        .share-link-container {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .share-link-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .copy-link-button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .copy-link-button:hover {
+            background-color: #0052a3;
+        }
+        
+        .copy-link-button.copied {
+            background-color: #28a745;
+        }
+        
+        .share-modal-close {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .share-modal-close:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Merge Sort Ranking Tool</h1>
+            <p class="description">Rank items by preference using merge sort - fewer comparisons than pairwise ranking</p>
+        </header>
+        
+        <main>
+            <section class="input-section">
+                <h2>Enter Items to Rank</h2>
+                <p>Enter items separated by commas or one per line:</p>
+                <textarea id="itemsInput" placeholder="Item 1&#10;Item 2&#10;Item 3&#10;Item 4&#10;..."></textarea>
+                <div class="input-format">Example: "apple, zebra, banana, cherry" or one item per line</div>
+                <div id="inputError" class="error"></div>
+                <button id="startButton" onclick="startRanking()">Start Ranking</button>
+            </section>
+            
+            <section class="comparison-section" id="comparisonSection">
+                <div class="progress-bar-container">
+                    <div class="progress-text" id="progressText">Comparing items...</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="comparison-info" id="comparisonInfo"></div>
+                
+                <div id="comparisonContent">
+                    <div class="comparison-button" id="item1Button" onclick="selectItem(0)"></div>
+                    <div class="vs">vs</div>
+                    <div class="comparison-button" id="item2Button" onclick="selectItem(1)"></div>
+                </div>
+                
+                <button class="undo-button" id="undoButton" onclick="undoLastComparison()" disabled>Undo Last Choice</button>
+                
+                <div class="live-ranking" id="liveRanking">
+                    <h3>Current Ranking</h3>
+                    <ol class="ranked-list" id="liveRankedList"></ol>
+                </div>
+            </section>
+            
+            <section class="results-section" id="resultsSection">
+                <h2>Final Ranking</h2>
+                <ol class="ranked-list" id="rankedList"></ol>
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button class="download-button" onclick="downloadRanking()">Download Ranking</button>
+                    <button class="share-button" onclick="shareResults()">Share Results</button>
+                    <button onclick="reset()">Rank Another List</button>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <div class="share-modal" id="shareModal">
+        <div class="share-modal-content">
+            <h3>Share Your Ranking</h3>
+            <p>Copy this link to share your ranking results:</p>
+            <div class="share-link-container">
+                <input type="text" class="share-link-input" id="shareLinkInput" readonly>
+                <button class="copy-link-button" id="copyLinkButton" onclick="copyShareLink()">Copy Link</button>
+            </div>
+            <button class="share-modal-close" onclick="closeShareModal()">Close</button>
+        </div>
+    </div>
+    
+    <script>
+        let items = [];
+        let comparisonQueue = [];
+        let currentComparison = null;
+        let sortedResult = [];
+        let comparisonHistory = [];
+        let totalComparisons = 0;
+        let completedComparisons = 0;
+        let isProcessing = false;
+        
+        // Merge sort state tracking
+        let mergeSortState = null;
+        
+        function parseInput(input) {
+            if (input.includes(',')) {
+                return input.split(',')
+                    .map(item => item.trim())
+                    .filter(item => item.length > 0);
+            }
+            
+            return input.split('\n')
+                .map(line => line.trim())
+                .filter(line => line.length > 0);
+        }
+        
+        function startRanking() {
+            const input = document.getElementById('itemsInput').value.trim();
+            const errorDiv = document.getElementById('inputError');
+            
+            if (!input) {
+                errorDiv.textContent = 'Please enter at least one item.';
+                return;
+            }
+            
+            items = parseInput(input);
+            
+            if (items.length < 2) {
+                errorDiv.textContent = 'Please enter at least 2 items to rank.';
+                return;
+            }
+            
+            errorDiv.textContent = '';
+            
+            // Initialize merge sort state
+            comparisonHistory = [];
+            totalComparisons = 0;
+            completedComparisons = 0;
+            sortedResult = [];
+            
+            // Hide input, show comparison
+            document.querySelector('.input-section').style.display = 'none';
+            document.getElementById('comparisonSection').style.display = 'block';
+            
+            // Start interactive merge sort
+            startInteractiveMergeSort();
+        }
+        
+        function startInteractiveMergeSort() {
+            // Create initial state: array of single-item arrays
+            const initialState = items.map((item, index) => ({
+                items: [item],
+                originalIndex: index
+            }));
+            
+            mergeSortState = {
+                pendingMerges: [],
+                currentLevel: initialState,
+                nextLevel: [],
+                levelIndex: 0
+            };
+            
+            // Build the merge tree structure
+            buildMergeTree();
+            
+            // Initialize live ranking
+            updateLiveRanking();
+            
+            // Start the first comparison (use setTimeout to ensure UI is ready)
+            setTimeout(() => {
+                try {
+                    processNextComparison();
+                } catch (error) {
+                    console.error('Error in processNextComparison:', error);
+                    document.getElementById('inputError').textContent = 
+                        'An error occurred. Please try again.';
+                }
+            }, 100);
+        }
+        
+        function buildMergeTree() {
+            // Calculate total comparisons needed for merge sort
+            // For n items, merge sort needs approximately n*log2(n) comparisons
+            // More precisely: for each merge of two sorted arrays of size a and b,
+            // we need at most (a + b - 1) comparisons
+            let level = mergeSortState.currentLevel.map(g => g.items.length);
+            let total = 0;
+            
+            while (level.length > 1) {
+                const nextLevel = [];
+                for (let i = 0; i < level.length; i += 2) {
+                    if (i + 1 < level.length) {
+                        // Merge two groups of sizes level[i] and level[i+1]
+                        const leftSize = level[i];
+                        const rightSize = level[i + 1];
+                        // Maximum comparisons in merge = leftSize + rightSize - 1
+                        total += leftSize + rightSize - 1;
+                        // Merged group has combined size
+                        nextLevel.push(leftSize + rightSize);
+                    } else {
+                        // Odd one out, carry forward
+                        nextLevel.push(level[i]);
+                    }
+                }
+                level = nextLevel;
+            }
+            
+            totalComparisons = Math.max(total, 1); // Ensure at least 1
+        }
+        
+        function processNextComparison() {
+            // Prevent infinite loops
+            if (isProcessing) {
+                return;
+            }
+            
+            // Check if sorting is complete
+            if (mergeSortState.currentLevel.length === 1 && mergeSortState.nextLevel.length === 0 && 
+                mergeSortState.pendingMerges.length === 0) {
+                showResults();
+                return;
+            }
+            
+            // If we've finished all pairs in current level, move to next level
+            if (mergeSortState.levelIndex >= mergeSortState.currentLevel.length) {
+                if (mergeSortState.nextLevel.length > 0) {
+                    mergeSortState.currentLevel = mergeSortState.nextLevel;
+                    mergeSortState.nextLevel = [];
+                    mergeSortState.levelIndex = 0;
+                } else if (mergeSortState.currentLevel.length === 1) {
+                    // Only one group left and no pending merges
+                    showResults();
+                    return;
+                } else {
+                    // Something went wrong
+                    console.error('Unexpected state in processNextComparison', mergeSortState);
+                    return;
+                }
+            }
+            
+            // Process current level merges
+            if (mergeSortState.currentLevel.length > 1) {
+                const leftIndex = mergeSortState.levelIndex;
+                const rightIndex = mergeSortState.levelIndex + 1;
+                
+                if (rightIndex < mergeSortState.currentLevel.length) {
+                    const leftGroup = mergeSortState.currentLevel[leftIndex];
+                    const rightGroup = mergeSortState.currentLevel[rightIndex];
+                    
+                    // Check if we have a pending merge for these groups
+                    let mergeState = mergeSortState.pendingMerges.find(
+                        m => m.leftGroup === leftGroup && m.rightGroup === rightGroup
+                    );
+                    
+                    if (!mergeState) {
+                        // Start new merge
+                        mergeState = {
+                            leftGroup: leftGroup,
+                            rightGroup: rightGroup,
+                            leftIndex: 0,
+                            rightIndex: 0,
+                            result: []
+                        };
+                        mergeSortState.pendingMerges.push(mergeState);
+                    }
+                    
+                    // Check if merge is complete
+                    if (mergeState.leftIndex >= mergeState.leftGroup.items.length &&
+                        mergeState.rightIndex >= mergeState.rightGroup.items.length) {
+                        // This merge is done, move to next
+                        mergeSortState.nextLevel.push({
+                            items: mergeState.result,
+                            originalIndex: -1
+                        });
+                        mergeSortState.pendingMerges = mergeSortState.pendingMerges.filter(m => m !== mergeState);
+                        mergeSortState.levelIndex += 2;
+                        
+                        updateLiveRanking();
+                        // Use setTimeout to avoid stack overflow
+                        setTimeout(() => {
+                            processNextComparison();
+                        }, 0);
+                        return;
+                    }
+                    
+                    // Get next comparison
+                    if (mergeState.leftIndex < mergeState.leftGroup.items.length &&
+                        mergeState.rightIndex < mergeState.rightGroup.items.length) {
+                        // Both have items, need comparison
+                        isProcessing = false; // Allow user interaction
+                        showComparison(
+                            mergeState.leftGroup.items[mergeState.leftIndex],
+                            mergeState.rightGroup.items[mergeState.rightIndex],
+                            mergeState
+                        );
+                        return;
+                    } else if (mergeState.leftIndex < mergeState.leftGroup.items.length) {
+                        // Only left has items, add remaining
+                        while (mergeState.leftIndex < mergeState.leftGroup.items.length) {
+                            mergeState.result.push(mergeState.leftGroup.items[mergeState.leftIndex]);
+                            mergeState.leftIndex++;
+                        }
+                        // Check if merge is complete and continue
+                        if (mergeState.leftIndex >= mergeState.leftGroup.items.length &&
+                            mergeState.rightIndex >= mergeState.rightGroup.items.length) {
+                            mergeSortState.nextLevel.push({
+                                items: mergeState.result,
+                                originalIndex: -1
+                            });
+                            mergeSortState.pendingMerges = mergeSortState.pendingMerges.filter(m => m !== mergeState);
+                            mergeSortState.levelIndex += 2;
+                            updateLiveRanking();
+                            setTimeout(processNextComparison, 0);
+                        } else {
+                            setTimeout(processNextComparison, 0);
+                        }
+                        return;
+                    } else if (mergeState.rightIndex < mergeState.rightGroup.items.length) {
+                        // Only right has items, add remaining
+                        while (mergeState.rightIndex < mergeState.rightGroup.items.length) {
+                            mergeState.result.push(mergeState.rightGroup.items[mergeState.rightIndex]);
+                            mergeState.rightIndex++;
+                        }
+                        // Check if merge is complete and continue
+                        if (mergeState.leftIndex >= mergeState.leftGroup.items.length &&
+                            mergeState.rightIndex >= mergeState.rightGroup.items.length) {
+                            mergeSortState.nextLevel.push({
+                                items: mergeState.result,
+                                originalIndex: -1
+                            });
+                            mergeSortState.pendingMerges = mergeSortState.pendingMerges.filter(m => m !== mergeState);
+                            mergeSortState.levelIndex += 2;
+                            updateLiveRanking();
+                            setTimeout(processNextComparison, 0);
+                        } else {
+                            setTimeout(processNextComparison, 0);
+                        }
+                        return;
+                    }
+                } else {
+                    // Odd number of groups, add the last one
+                    mergeSortState.nextLevel.push(mergeSortState.currentLevel[leftIndex]);
+                    mergeSortState.levelIndex += 1; // Move past the single item
+                    setTimeout(processNextComparison, 0);
+                    return;
+                }
+            } else if (mergeSortState.currentLevel.length === 1) {
+                // Only one group left, we're done
+                showResults();
+                return;
+            }
+        }
+        
+        function showComparison(item1, item2, mergeState) {
+            try {
+                currentComparison = {
+                    item1: item1,
+                    item2: item2,
+                    mergeState: mergeState
+                };
+                
+                const item1Button = document.getElementById('item1Button');
+                const item2Button = document.getElementById('item2Button');
+                
+                if (!item1Button || !item2Button) {
+                    console.error('Comparison buttons not found');
+                    return;
+                }
+                
+                item1Button.textContent = item1;
+                item2Button.textContent = item2;
+                item1Button.dataset.item = item1;
+                item2Button.dataset.item = item2;
+                
+                // Update progress
+                completedComparisons++;
+                const progress = Math.min((completedComparisons / totalComparisons) * 100, 100);
+                const progressFill = document.getElementById('progressFill');
+                const progressText = document.getElementById('progressText');
+                
+                if (progressFill) {
+                    progressFill.style.width = progress + '%';
+                }
+                if (progressText) {
+                    progressText.textContent = 
+                        `Comparison ${completedComparisons} of approximately ${totalComparisons}`;
+                }
+                
+                // Show comparison context
+                const leftRemaining = mergeState.leftGroup.items.length - mergeState.leftIndex;
+                const rightRemaining = mergeState.rightGroup.items.length - mergeState.rightIndex;
+                const comparisonInfo = document.getElementById('comparisonInfo');
+                if (comparisonInfo) {
+                    comparisonInfo.textContent = 
+                        `Merging sorted groups (${leftRemaining} left, ${rightRemaining} right remaining)`;
+                }
+            } catch (error) {
+                console.error('Error in showComparison:', error);
+            }
+        }
+        
+        function selectItem(buttonIndex) {
+            if (!currentComparison) return;
+            
+            const selectedItem = buttonIndex === 0 ? 
+                currentComparison.item1 : 
+                currentComparison.item2;
+            const otherItem = buttonIndex === 0 ? 
+                currentComparison.item2 : 
+                currentComparison.item1;
+            
+            const mergeState = currentComparison.mergeState;
+            
+            // Save to history
+            comparisonHistory.push({
+                selected: selectedItem,
+                other: otherItem,
+                mergeState: JSON.parse(JSON.stringify(mergeState))
+            });
+            
+            // Add selected item to result
+            mergeState.result.push(selectedItem);
+            
+            // Advance the index of the selected group
+            if (buttonIndex === 0) {
+                mergeState.leftIndex++;
+            } else {
+                mergeState.rightIndex++;
+            }
+            
+            updateUndoButton();
+            updateLiveRanking();
+            
+            // Continue with next comparison (use setTimeout to avoid stack overflow)
+            isProcessing = true;
+            setTimeout(() => {
+                isProcessing = false;
+                processNextComparison();
+            }, 0);
+        }
+        
+        function undoLastComparison() {
+            if (comparisonHistory.length === 0) return;
+            
+            const last = comparisonHistory.pop();
+            const mergeState = currentComparison.mergeState;
+            
+            // Restore merge state
+            mergeState.leftIndex = last.mergeState.leftIndex;
+            mergeState.rightIndex = last.mergeState.rightIndex;
+            mergeState.result = [...last.mergeState.result];
+            
+            // Remove the last added item
+            mergeState.result.pop();
+            
+            // Revert the index
+            if (last.selected === mergeState.leftGroup.items[mergeState.leftIndex - 1]) {
+                mergeState.leftIndex--;
+            } else {
+                mergeState.rightIndex--;
+            }
+            
+            completedComparisons--;
+            updateUndoButton();
+            updateLiveRanking();
+            
+            // Show the comparison again
+            if (mergeState.leftIndex < mergeState.leftGroup.items.length &&
+                mergeState.rightIndex < mergeState.rightGroup.items.length) {
+                showComparison(
+                    mergeState.leftGroup.items[mergeState.leftIndex],
+                    mergeState.rightGroup.items[mergeState.rightIndex],
+                    mergeState
+                );
+            } else {
+                processNextComparison();
+            }
+        }
+        
+        function updateUndoButton() {
+            const undoButton = document.getElementById('undoButton');
+            undoButton.disabled = comparisonHistory.length === 0;
+        }
+        
+        function updateLiveRanking() {
+            // Collect ALL items from all sources to show complete ranking
+            const allItems = [];
+            const processedItems = new Set();
+            
+            // Get items from completed merges in nextLevel (these are fully sorted)
+            mergeSortState.nextLevel.forEach(group => {
+                group.items.forEach(item => {
+                    if (!processedItems.has(item)) {
+                        allItems.push(item);
+                        processedItems.add(item);
+                    }
+                });
+            });
+            
+            // Get items from pending merges (items already placed in merge result)
+            mergeSortState.pendingMerges.forEach(merge => {
+                merge.result.forEach(item => {
+                    if (!processedItems.has(item)) {
+                        allItems.push(item);
+                        processedItems.add(item);
+                    }
+                });
+            });
+            
+            // Get ALL items from current level groups (including ones being merged)
+            // For groups being merged, we need to get items from both the result and remaining items
+            for (let i = 0; i < mergeSortState.currentLevel.length; i++) {
+                const group = mergeSortState.currentLevel[i];
+                
+                // Check if this group is part of a pending merge
+                const mergeState = mergeSortState.pendingMerges.find(
+                    m => m.leftGroup === group || m.rightGroup === group
+                );
+                
+                if (mergeState) {
+                    // This group is being merged - add items not yet processed
+                    if (mergeState.leftGroup === group) {
+                        // Add remaining items from left group
+                        for (let j = mergeState.leftIndex; j < group.items.length; j++) {
+                            const item = group.items[j];
+                            if (!processedItems.has(item)) {
+                                allItems.push(item);
+                                processedItems.add(item);
+                            }
+                        }
+                    } else if (mergeState.rightGroup === group) {
+                        // Add remaining items from right group
+                        for (let j = mergeState.rightIndex; j < group.items.length; j++) {
+                            const item = group.items[j];
+                            if (!processedItems.has(item)) {
+                                allItems.push(item);
+                                processedItems.add(item);
+                            }
+                        }
+                    }
+                } else {
+                    // Group is not being merged, add all its items
+                    group.items.forEach(item => {
+                        if (!processedItems.has(item)) {
+                            allItems.push(item);
+                            processedItems.add(item);
+                        }
+                    });
+                }
+            }
+            
+            // Display ranking - only show top 3
+            const liveRankedList = document.getElementById('liveRankedList');
+            liveRankedList.innerHTML = '';
+            
+            // Take first 3 items (they represent the current top 3 based on comparisons so far)
+            const topItems = allItems.slice(0, 3);
+            
+            topItems.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                if (index === 0) li.classList.add('medal-gold');
+                else if (index === 1) li.classList.add('medal-silver');
+                else if (index === 2) li.classList.add('medal-bronze');
+                liveRankedList.appendChild(li);
+            });
+        }
+        
+        function showResults() {
+            document.getElementById('comparisonSection').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'block';
+            
+            // Get final sorted result
+            sortedResult = mergeSortState.currentLevel[0].items;
+            
+            // Store ranked list globally for download and share
+            window.finalRanking = [...sortedResult];
+            
+            const rankedList = document.getElementById('rankedList');
+            rankedList.innerHTML = '';
+            
+            sortedResult.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                if (index === 0) li.classList.add('medal-gold');
+                else if (index === 1) li.classList.add('medal-silver');
+                else if (index === 2) li.classList.add('medal-bronze');
+                rankedList.appendChild(li);
+            });
+        }
+        
+        function downloadRanking() {
+            if (!window.finalRanking || window.finalRanking.length === 0) {
+                return;
+            }
+            
+            // Create CSV content with ranking
+            const header = 'Rank,Item\n';
+            const rows = window.finalRanking
+                .map((item, index) => `${index + 1},"${item.replace(/"/g, '""')}"`)
+                .join('\n');
+            const content = header + rows;
+            
+            // Create a blob and download link
+            const blob = new Blob([content], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ranking.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        function shareResults() {
+            if (!window.finalRanking || window.finalRanking.length === 0) {
+                return;
+            }
+            
+            // Encode the ranking data as base64 JSON
+            const rankingData = JSON.stringify(window.finalRanking);
+            const encodedData = btoa(encodeURIComponent(rankingData));
+            
+            // Create shareable URL
+            const currentUrl = window.location.origin + window.location.pathname;
+            const shareUrl = `${currentUrl}?ranking=${encodedData}`;
+            
+            // Show modal with the link
+            const modal = document.getElementById('shareModal');
+            const linkInput = document.getElementById('shareLinkInput');
+            const copyButton = document.getElementById('copyLinkButton');
+            
+            linkInput.value = shareUrl;
+            copyButton.textContent = 'Copy Link';
+            copyButton.classList.remove('copied');
+            modal.classList.add('active');
+            
+            // Auto-select the link text
+            linkInput.select();
+        }
+        
+        function copyShareLink() {
+            const linkInput = document.getElementById('shareLinkInput');
+            const copyButton = document.getElementById('copyLinkButton');
+            
+            linkInput.select();
+            linkInput.setSelectionRange(0, 99999); // For mobile devices
+            
+            navigator.clipboard.writeText(linkInput.value).then(() => {
+                copyButton.textContent = 'Copied!';
+                copyButton.classList.add('copied');
+                setTimeout(() => {
+                    copyButton.textContent = 'Copy Link';
+                    copyButton.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                // Fallback for older browsers
+                try {
+                    document.execCommand('copy');
+                    copyButton.textContent = 'Copied!';
+                    copyButton.classList.add('copied');
+                    setTimeout(() => {
+                        copyButton.textContent = 'Copy Link';
+                        copyButton.classList.remove('copied');
+                    }, 2000);
+                } catch (err) {
+                    alert('Failed to copy link. Please copy manually.');
+                }
+            });
+        }
+        
+        function closeShareModal() {
+            const modal = document.getElementById('shareModal');
+            modal.classList.remove('active');
+        }
+        
+        // Close modal when clicking outside
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('shareModal');
+            if (event.target === modal) {
+                closeShareModal();
+            }
+        });
+        
+        // Load ranking from URL on page load
+        function loadRankingFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const rankingParam = urlParams.get('ranking');
+            
+            if (rankingParam) {
+                try {
+                    // Decode the base64 data
+                    const decodedData = decodeURIComponent(atob(rankingParam));
+                    const ranking = JSON.parse(decodedData);
+                    
+                    if (Array.isArray(ranking) && ranking.length > 0) {
+                        // Display the shared ranking
+                        window.finalRanking = ranking;
+                        displaySharedRanking(ranking);
+                    }
+                } catch (err) {
+                    console.error('Failed to load ranking from URL:', err);
+                }
+            }
+        }
+        
+        function displaySharedRanking(ranking) {
+            // Hide input section, show results
+            document.querySelector('.input-section').style.display = 'none';
+            document.getElementById('comparisonSection').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'block';
+            
+            const rankedList = document.getElementById('rankedList');
+            rankedList.innerHTML = '';
+            
+            ranking.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                if (index === 0) li.classList.add('medal-gold');
+                else if (index === 1) li.classList.add('medal-silver');
+                else if (index === 2) li.classList.add('medal-bronze');
+                rankedList.appendChild(li);
+            });
+        }
+        
+        function reset() {
+            items = [];
+            comparisonQueue = [];
+            currentComparison = null;
+            sortedResult = [];
+            comparisonHistory = [];
+            mergeSortState = null;
+            
+            document.getElementById('itemsInput').value = '';
+            document.getElementById('inputError').textContent = '';
+            document.querySelector('.input-section').style.display = 'block';
+            document.getElementById('comparisonSection').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'none';
+            
+            // Clear URL parameters
+            if (window.history.replaceState) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+        
+        // Load ranking from URL when page loads
+        window.addEventListener('DOMContentLoaded', loadRankingFromUrl);
+        
+        // Keyboard support
+        document.addEventListener('keydown', function(event) {
+            const comparisonSection = document.getElementById('comparisonSection');
+            if (comparisonSection.style.display === 'none') {
+                return;
+            }
+            
+            if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+                return;
+            }
+            
+            if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                selectItem(0);
+            } else if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                selectItem(1);
+            }
+        });
+    </script>
+</body>
+</html>
